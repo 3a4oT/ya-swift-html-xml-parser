@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# This hook formats staged Swift files before each commit.
+
+# 1. Find all staged Swift files.
+# The diff-filter=d ensures that we don't try to format deleted files.
+STAGED_SWIFT_FILES=$(git diff --name-only --cached --diff-filter=d | grep '\.swift$')
+
+if [ -z "$STAGED_SWIFT_FILES" ]; then
+    # No Swift files are staged, so we're done.
+    exit 0
+fi
+
+# 2. Run swift-format on the staged files.
+echo "Running swift-format on staged files..."
+echo "$STAGED_SWIFT_FILES" | xargs swift-format -i
+
+# 3. Re-stage the files that were formatted so the changes are included in the commit.
+echo "$STAGED_SWIFT_FILES" | xargs git add
+
+echo "swift-format complete."
+exit 0

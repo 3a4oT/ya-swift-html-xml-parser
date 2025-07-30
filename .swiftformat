@@ -1,0 +1,30 @@
+--swiftversion 6
+
+# 🧼 Style
+--indent 4
+--wrapeffects never
+--wraparguments preserve
+--wrapparameters preserve
+--lineaftermarks false
+--anonymousforeach ignore
+
+--commas inline
+--ranges spaced
+--self insert
+--guardelse same-line
+
+# 🔒 Access control in extensions
+--extensionacl on-declarations
+
+# 📐 Formatting rules
+--stripunusedargs closure-only
+--trimwhitespace always
+--header ignore
+
+# 🧾 Preserve developer intent
+--disable redundantType                 # keep explicit types
+--disable redundantReturn               # avoid removing return in single-line closures
+--disable wrapMultilineStatementBraces  # avoid new lines
+
+# Exlude
+--exclude .build/

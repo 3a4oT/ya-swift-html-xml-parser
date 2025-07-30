@@ -1,0 +1,15 @@
+{
+	"name": "ya-swift-html-xml-parser (Ubuntu)",
+	"build": {
+		"dockerfile": "../.docker/Dockerfile.ubuntu"
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"sswg.swift-lang"
+			]
+		}
+	},
+	"postCreateCommand": "swift build",
+	"remoteUser": "root"
+}

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  linting:
+    name: "Linting (swift-format)"
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install swift-format
+        run: brew install swift-format
+
+      - name: Run swift-format lint
+        run: swift-format lint . --strict
+
+  build-and-test:
+    name: "Build & Test (${{ matrix.os }} | Swift ${{ matrix.swift-version }})"
+    runs-on: ${{ matrix.os }}
+    
+    container: ${{ matrix.container }}
+
+    strategy:
+      # To test against a stable release, use a specific version string like "6.1.0".
+      # To test against the latest development snapshot for a branch, use the branch name,
+      # for example: "swift-6.2-branch".
+      matrix:
+        include:
+          - os: macos-latest
+            swift-version: "6.1.0"
+          - os: macos-latest
+            swift-version: "swift-6.2-branch"
+          - os: ubuntu-latest
+            swift-version: "6.1.0"
+            container: "swift:6.1-jammy"
+          - os: ubuntu-latest
+            swift-version: "swift-6.2-branch"
+            container: "swift:6.2-jammy"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install libxml2 on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: apt-get update && apt-get install -y libxml2-dev
+
+      - name: Setup Swift on macOS
+        if: matrix.os == 'macos-latest'
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ matrix.swift-version }}
+
+      - name: Build and run tests
+        run: swift test
+
+  build-and-test-ios:
+    name: "Build & Test (iOS | Swift ${{ matrix.swift-version }})"
+    runs-on: macos-latest
+    
+    strategy:
+      # To test against a stable release, use a specific version string like "6.1.0".
+      # To test against the latest development snapshot for a branch, use the branch name,
+      # for example: "swift-6.2-branch".
+      matrix:
+        swift-version: ["6.1.0", "swift-6.2-branch"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ matrix.swift-version }}
+      
+      - name: Select latest Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+        
+      - name: Find an iOS Simulator
+        id: find_simulator
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -m 1 'iPhone' | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr($0, RSTART + 1, RLENGTH - 2) }')
+          echo "simulator_udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Build and run tests for iOS
+        run: |
+          xcodebuild test -scheme ya-swift-html-xml-parser \
+                          -destination 'platform=iOS Simulator,id=${{ steps.find_simulator.outputs.simulator_udid }}'
