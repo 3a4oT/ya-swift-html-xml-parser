@@ -1,7 +1,7 @@
 # Dockerfile for Ubuntu-based testing (glibc)
 #
 # This file defines the environment for testing the library on Ubuntu.
-# It starts from the official Swift image for Ubuntu 22.04 (Jammy Jellyfish).
+# It starts from the official Swift image for Ubuntu 24.04 (Noble Numbat).
 #
 # Build this image with:
 # docker build -t ya-swift-xml-ubuntu -f .docker/Dockerfile.ubuntu .
@@ -9,8 +9,8 @@
 # Run tests inside the container with:
 # docker run --rm -v "$(pwd):/src" -w /src ya-swift-xml-ubuntu swift test
 
-# Use the official Swift image for Swift 6.1 on Ubuntu 22.04
-FROM swift:6.1-jammy
+# Use the official Swift image for Swift 6.1.2 on Ubuntu 24.04
+FROM swift:6.1.2-noble
 
 # Install libxml2, which is a system dependency for this project.
 # The -y flag assumes "yes" to all prompts.

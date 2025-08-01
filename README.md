@@ -1,9 +1,9 @@
 # ya-swift-html-xml-parser
 
-A tiny, modern Swift wrapper for `libxml2` that makes XML & HTML parsing easy, taking advantage of the latest Swift 6 features.
+A tiny, modern Swift wrapper for `libxml2` that makes XML & HTML parsing easy, taking a-dvantage of the latest Swift features.
 
-[![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20iOS%20%7C%20Linux-lightgrey.svg)](https://swift.org)
+[![Swift 6.1](https://img.shields.io/badge/Swift-6.1-orange.svg)](https://swift.org)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS%20%7C%20Linux-lightgrey.svg)](https://swift.org)
 [![SPM compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
 
 ## Features
@@ -17,16 +17,15 @@ A tiny, modern Swift wrapper for `libxml2` that makes XML & HTML parsing easy, t
 
 ## Build Requirements
 
-- Swift 6.2+
+- Swift 6.1+
 - `libxml2`. This library is a wrapper around the C library `libxml2`.
-  - On Apple platforms (macOS, iOS), this is provided by the system and no action is needed.
-  - On Ubuntu, you must install the development package: `sudo apt-get install libxml2-dev`.
+  - On Apple platforms (macOS, iOS, tvOS, watchOS), this is provided by the system and no action is needed.
+  - On Ubuntu, you must install the development package: `sudo apt-get install libxml2-dev`. Other distributions may require a similar package (e.g., `libxml2-devel` on Fedora).
 
 ## Supported Platforms
 
-- macOS
-- iOS
-- Linux (Ubuntu)
+- Darwin (macOS, iOS, tvOS, watchOS)
+- Linux (Ubuntu). Other distributions like Amazon Linux 2 and Fedora are not officially tested but may work.
 
 ## Installation
 
@@ -323,7 +322,7 @@ This gives you access to a Linux terminal and allows you to build and debug with
 
 We welcome contributions to this project! To ensure a consistent code style, we use [SwiftFormat](https://github.com/nicklockwood/SwiftFormat).
 
-A pre-commit hook is included in this repository to automatically format your code before you commit.
+A pre-commit hook is included in this repository to automatically format your code before you commit. To enable it, you must run a one-time setup.
 
 ### One-Time Setup
 

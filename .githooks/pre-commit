@@ -2,6 +2,13 @@
 
 # This hook formats staged Swift files before each commit.
 
+# Ensure swiftformat is installed
+command -v swiftformat >/dev/null 2>&1 || {
+  echo >&2 "swiftformat is not installed. Please install it to use this pre-commit hook."
+  echo >&2 "You can install it with: brew install swiftformat"
+  exit 1
+}
+
 # 1. Find all staged Swift files.
 # The diff-filter=d ensures that we don't try to format deleted files.
 STAGED_SWIFT_FILES=$(git diff --name-only --cached --diff-filter=d | grep '\.swift$')
@@ -11,12 +18,12 @@ if [ -z "$STAGED_SWIFT_FILES" ]; then
     exit 0
 fi
 
-# 2. Run swift-format on the staged files.
-echo "Running swift-format on staged files..."
-echo "$STAGED_SWIFT_FILES" | xargs swift-format -i
+# 2. Run swiftformat on the staged files.
+echo "Running swiftformat on staged files..."
+swiftformat $STAGED_SWIFT_FILES
 
 # 3. Re-stage the files that were formatted so the changes are included in the commit.
-echo "$STAGED_SWIFT_FILES" | xargs git add
+git add $STAGED_SWIFT_FILES
 
-echo "swift-format complete."
+echo "swiftformat complete."
 exit 0
