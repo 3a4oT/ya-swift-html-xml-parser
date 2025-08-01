@@ -33,7 +33,7 @@ Add ya-swift-html-xml-parser as a dependency to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/your-username/ya-swift-html-xml-parser.git", from: "0.0.1")
+    .package(url: "https://github.com/3a4oT/ya-swift-html-xml-parser.git", from: "0.0.1")
 ]
 ```
 
@@ -279,7 +279,7 @@ do {
 
 ## Comparison to SwiftSoup
 
-**SwiftSoup** is a popular, pure-Swift HTML parser. `ya-swift-html-xml-parser` has a different design philosophy and may be suitable for different tasks.
+**[SwiftSoup](https://github.com/scinfu/SwiftSoup)** is a popular, pure-Swift HTML parser. `ya-swift-html-xml-parser` has a different design philosophy and may be suitable for different tasks.
 
 | Feature               | ya-swift-html-xml-parser                                         | SwiftSoup                                             |
 |-----------------------|------------------------------------------------------|-------------------------------------------------------|
@@ -290,7 +290,7 @@ do {
 | **Concurrency**       | Provides an actor for uncommon thread-safe parsing needs. | Thread-safety is managed by the user.                 |
 | **Ideal Use Case**    | Fast data extraction and scraping where a minimal API is sufficient. | Projects that need to modify the DOM, or where a pure-Swift dependency is required. |
 
-In short, choose **ya-swift-html-xml-parser** for a lightweight tool focused on fast data extraction. Choose **SwiftSoup** when you need a comprehensive, pure-Swift toolkit for more complex DOM manipulation.
+In short, choose **ya-swift-html-xml-parser** for a lightweight tool focused on fast data extraction. Choose **[SwiftSoup](https://github.com/scinfu/SwiftSoup)** when you need a comprehensive, pure-Swift toolkit for more complex DOM manipulation.
 
 ## Local Development
 
