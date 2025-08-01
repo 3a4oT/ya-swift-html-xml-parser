@@ -33,6 +33,7 @@ jobs:
           - { name: 'iOS', grep: 'iPhone' }
           - { name: 'tvOS', grep: 'Apple TV' }
           - { name: 'watchOS', grep: 'Apple Watch' }
+          - { name: 'visionOS', grep: 'Apple Vision' }
 
     steps:
       - name: Checkout repository
