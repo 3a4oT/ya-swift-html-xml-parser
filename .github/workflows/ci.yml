@@ -9,7 +9,7 @@ on:
 jobs:
   linting:
     name: "Linting (swift-format)"
-    runs-on: macos-latest
+    runs-on: macos-15
     
     steps:
       - name: Checkout repository
@@ -18,79 +18,88 @@ jobs:
       - name: Install swift-format
         run: brew install swift-format
 
-      - name: Run swift-format lint
-        run: swift-format lint . --strict
+      - name: SwiftFormat
+        run: swiftformat --lint . --reporter github-actions-log
 
-  build-and-test:
-    name: "Build & Test (${{ matrix.os }} | Swift ${{ matrix.swift-version }})"
-    runs-on: ${{ matrix.os }}
-    
-    container: ${{ matrix.container }}
+  test-darwin:
+    name: "Test (on ${{ matrix.platform.name }})"
+    runs-on: macos-15
 
     strategy:
-      # To test against a stable release, use a specific version string like "6.1.0".
-      # To test against the latest development snapshot for a branch, use the branch name,
-      # for example: "swift-6.2-branch".
+      fail-fast: false
       matrix:
-        include:
-          - os: macos-latest
-            swift-version: "6.1.0"
-          - os: macos-latest
-            swift-version: "swift-6.2-branch"
-          - os: ubuntu-latest
-            swift-version: "6.1.0"
-            container: "swift:6.1-jammy"
-          - os: ubuntu-latest
-            swift-version: "swift-6.2-branch"
-            container: "swift:6.2-jammy"
+        platform:
+          - { name: 'macOS', grep: 'macOS' }
+          - { name: 'iOS', grep: 'iPhone' }
+          - { name: 'tvOS', grep: 'Apple TV' }
+          - { name: 'watchOS', grep: 'Apple Watch' }
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.4
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Build and run tests
+        run: |
+          PLATFORM_NAME="${{ matrix.platform.name }}"
+          if [[ "$PLATFORM_NAME" == "macOS" ]]; then
+            xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=macOS,arch=arm64"
+          else
+            GREP_PATTERN="${{ matrix.platform.grep }}"
+            UDID=$(xcrun simctl list devices available | grep -m 1 "$GREP_PATTERN" | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr($0, RSTART + 1, RLENGTH - 2) }')
+            
+            if [ -z "$UDID" ]; then
+              echo "::error::Could not find an available simulator for ${PLATFORM_NAME}"
+              exit 1
+            fi
+
+            echo "Found available ${PLATFORM_NAME} simulator with UDID: ${UDID}"
+            
+            xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=${PLATFORM_NAME} Simulator,id=${UDID}"
+          fi
+
+  test-darwin-beta:
+    name: "Test (Xcode 26 Beta on macOS)"
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26.0
+        run: sudo xcode-select -s /Applications/Xcode_26.0.app
+
+      - name: Build and run tests
+        run: xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=macOS,arch=arm64"
+
+  test-linux-stable:
+    name: "Test (Swift 6.1 on Ubuntu 24.04 LTS)"
+    runs-on: ubuntu-latest
+    container: 'swift:6.1.2-noble'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Install libxml2 on Linux
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install libxml2
         run: apt-get update && apt-get install -y libxml2-dev
-
-      - name: Setup Swift on macOS
-        if: matrix.os == 'macos-latest'
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift-version }}
 
       - name: Build and run tests
         run: swift test
 
-  build-and-test-ios:
-    name: "Build & Test (iOS | Swift ${{ matrix.swift-version }})"
-    runs-on: macos-latest
-    
-    strategy:
-      # To test against a stable release, use a specific version string like "6.1.0".
-      # To test against the latest development snapshot for a branch, use the branch name,
-      # for example: "swift-6.2-branch".
-      matrix:
-        swift-version: ["6.1.0", "swift-6.2-branch"]
+  test-linux-nightly:
+    name: "Test (Swift 6.2 Nightly on Ubuntu 24.04 LTS)"
+    runs-on: ubuntu-latest
+    container: 'swiftlang/swift:nightly-6.2-noble'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift-version }}
       
-      - name: Select latest Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-        
-      - name: Find an iOS Simulator
-        id: find_simulator
-        run: |
-          UDID=$(xcrun simctl list devices available | grep -m 1 'iPhone' | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr($0, RSTART + 1, RLENGTH - 2) }')
-          echo "simulator_udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: Install libxml2
+        run: apt-get update && apt-get install -y libxml2-dev
 
-      - name: Build and run tests for iOS
-        run: |
-          xcodebuild test -scheme ya-swift-html-xml-parser \
-                          -destination 'platform=iOS Simulator,id=${{ steps.find_simulator.outputs.simulator_udid }}'
+      - name: Build and run tests
+        run: swift test

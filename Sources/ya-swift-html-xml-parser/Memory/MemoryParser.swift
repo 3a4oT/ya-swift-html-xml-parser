@@ -1,137 +1,144 @@
 import CLibXML2
 
 #if canImport(Darwin)
-  import Darwin.C
+    import Darwin.C
 #elseif canImport(Glibc)
-  import Glibc
+    import Glibc
 #elseif canImport(Musl)
-  import Musl
+    import Musl
 #elseif canImport(Android)
-  import Android
+    import Android
 #elseif os(Windows)
-  import ucrt
-  import CRT
-  import WinSDK
+    import CRT
+    import ucrt
+    import WinSDK
 #elseif os(WASI)
-  import WASILibc
+    import WASILibc
 #endif
 
 /// A memory-based parser that loads the entire document into memory.
 /// This parser is non-copyable to ensure single ownership of parsing resources.
 public struct MemoryParser: ~Copyable {
-  private let options: MemoryParserOptions
+    private let options: MemoryParserOptions
 
-  public init(options: MemoryParserOptions = .lenientXML) {
-    self.options = options
-  }
-  #if swift(>=6.2)
-    /// Parses an XML or HTML document from a byte span.
-    ///
-    /// - Parameter bytes: A `Span` over the byte buffer containing the document.
-    /// - Returns: A `XMLDocument` representing the parsed document.
-    /// - Throws: `XMLError` if parsing fails.
-    internal func parse(bytes: borrowing Span<UInt8>) throws(XMLError) -> XMLDocument {
-      guard bytes.count <= Int32.max else {
-        throw XMLError.parsingError(
-          message:
-            "Input data is too large. The maximum size for memory-based parsing is \(Int32.max) bytes."
-        )
-      }
+    public init(options: MemoryParserOptions = .lenientXML) {
+        self.options = options
+    }
 
-      let docPtr: xmlDocPtr?
-      if options.isHTML {
-        docPtr = bytes.withUnsafeBufferPointer { buffer in
-          htmlReadMemory(buffer.baseAddress, Int32(buffer.count), nil, nil, options.flags.rawValue)
+    #if swift(>=6.2)
+        /// Parses an XML or HTML document from a byte span.
+        ///
+        /// - Parameter bytes: A `Span` over the byte buffer containing the document.
+        /// - Returns: A `XMLDocument` representing the parsed document.
+        /// - Throws: `XMLError` if parsing fails.
+        func parse(bytes: borrowing Span<UInt8>) throws(XMLError) -> XMLDocument {
+            guard bytes.count <= Int32.max else {
+                throw XMLError.parsingError(
+                    message:
+                    "Input data is too large. The maximum size for memory-based parsing is \(Int32.max) bytes."
+                )
+            }
+
+            let docPtr: xmlDocPtr? =
+                if self.options.isHTML {
+                    bytes.withUnsafeBufferPointer { buffer in
+                        htmlReadMemory(
+                            buffer.baseAddress, Int32(buffer.count), nil, nil, self.options.flags.rawValue
+                        )
+                    }
+                } else {
+                    bytes.withUnsafeBufferPointer { buffer in
+                        xmlReadMemory(
+                            buffer.baseAddress, Int32(buffer.count), nil, nil, self.options.flags.rawValue
+                        )
+                    }
+                }
+
+            guard let doc = docPtr else {
+                throw XMLError.parsingError(message: self.getLastError())
+            }
+
+            return XMLDocument(doc)
         }
-      } else {
-        docPtr = bytes.withUnsafeBufferPointer { buffer in
-          xmlReadMemory(buffer.baseAddress, Int32(buffer.count), nil, nil, options.flags.rawValue)
+    #else
+        // Fallback for older Swift versions that do not support Span
+        func parse(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
+            guard bytes.count <= Int32.max else {
+                throw XMLError.parsingError(
+                    message:
+                    "Input data is too large. The maximum size for memory-based parsing is \(Int32.max) bytes."
+                )
+            }
+
+            let docPtr: xmlDocPtr? =
+                if self.options.isHTML {
+                    htmlReadMemory(
+                        bytes.baseAddress, Int32(bytes.count), nil, nil, self.options.flags.rawValue
+                    )
+                } else {
+                    xmlReadMemory(
+                        bytes.baseAddress, Int32(bytes.count), nil, nil, self.options.flags.rawValue
+                    )
+                }
+
+            guard let doc = docPtr else {
+                throw XMLError.parsingError(message: self.getLastError())
+            }
+
+            return XMLDocument(doc)
         }
-      }
-
-      guard let doc = docPtr else {
-        throw XMLError.parsingError(message: getLastError())
-      }
-
-      return XMLDocument(doc)
-    }
-  #else
-    // Fallback for older Swift versions that do not support Span
-    internal func parse(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
-      guard bytes.count <= Int32.max else {
-        throw XMLError.parsingError(
-          message:
-            "Input data is too large. The maximum size for memory-based parsing is \(Int32.max) bytes."
-        )
-      }
-
-      let docPtr: xmlDocPtr?
-      if options.isHTML {
-        docPtr = htmlReadMemory(
-          bytes.baseAddress, Int32(bytes.count), nil, nil, options.flags.rawValue)
-      } else {
-        docPtr = xmlReadMemory(
-          bytes.baseAddress, Int32(bytes.count), nil, nil, options.flags.rawValue)
-      }
-
-      guard let doc = docPtr else {
-        throw XMLError.parsingError(message: getLastError())
-      }
-
-      return XMLDocument(doc)
-    }
-  #endif
-  /// Parse XML/HTML from a String.
-  /// - Note: This method is NOT thread-safe. libxml2 uses global state during parsing.
-  public func parse(string: String) throws(XMLError) -> XMLDocument {
-    var string = string
-    do {
-      return try string.withUTF8 { buffer in
-        #if swift(>=6.2)
-          return try parse(bytes: Span(_unsafeElements: buffer))
-        #else
-          return try parse(bytes: buffer)
-        #endif
-      }
-    } catch {
-      // Since `parse(bytes:)` is typed to throw XMLError, any other
-      // error here would be from `withUTF8`, which is unexpected.
-      throw XMLError.internalInconsistency(message: "Failed to process string with UTF-8: \(error)")
-    }
-  }
-
-  /// Parse XML/HTML from a file.
-  /// - Note: This method is NOT thread-safe. libxml2 uses global state during parsing.
-  public func parseFile(at path: String) throws(XMLError) -> XMLDocument {
-    // Use the C `access` function to check for read permissions.
-    guard access(path, R_OK) == 0 else {
-      throw XMLError.fileNotFound(path: path)
+    #endif
+    /// Parse XML/HTML from a String.
+    /// - Note: This method is NOT thread-safe. libxml2 uses global state during parsing.
+    public func parse(string: String) throws(XMLError) -> XMLDocument {
+        var string = string
+        do {
+            return try string.withUTF8 { buffer in
+                #if swift(>=6.2)
+                    return try self.parse(bytes: Span(_unsafeElements: buffer))
+                #else
+                    return try self.parse(bytes: buffer)
+                #endif
+            }
+        } catch {
+            // Since `parse(bytes:)` is typed to throw XMLError, any other
+            // error here would be from `withUTF8`, which is unexpected.
+            throw XMLError.internalInconsistency(message: "Failed to process string with UTF-8: \(error)")
+        }
     }
 
-    let docPtr: xmlDocPtr?
-    if options.isHTML {
-      docPtr = htmlReadFile(path, nil, options.flags.rawValue)
-    } else {
-      docPtr = xmlReadFile(path, nil, options.flags.rawValue)
+    /// Parse XML/HTML from a file.
+    /// - Note: This method is NOT thread-safe. libxml2 uses global state during parsing.
+    public func parseFile(at path: String) throws(XMLError) -> XMLDocument {
+        // Use the C `access` function to check for read permissions.
+        guard access(path, R_OK) == 0 else {
+            throw XMLError.fileNotFound(path: path)
+        }
+
+        let docPtr: xmlDocPtr? =
+            if self.options.isHTML {
+                htmlReadFile(path, nil, self.options.flags.rawValue)
+            } else {
+                xmlReadFile(path, nil, self.options.flags.rawValue)
+            }
+
+        guard let doc = docPtr else {
+            throw XMLError.parsingError(message: self.getLastError())
+        }
+
+        return XMLDocument(doc)
     }
 
-    guard let doc = docPtr else {
-      throw XMLError.parsingError(message: getLastError())
+    private func getLastError() -> String {
+        let error = xmlGetLastError()
+        defer { xmlResetLastError() }
+
+        guard let err = error else {
+            return "Unknown parsing error"
+        }
+
+        return String(cString: err.pointee.message).trimmingWhitespace()
     }
-
-    return XMLDocument(doc)
-  }
-
-  private func getLastError() -> String {
-    let error = xmlGetLastError()
-    defer { xmlResetLastError() }
-
-    guard let err = error else {
-      return "Unknown parsing error"
-    }
-
-    return String(cString: err.pointee.message).trimmingWhitespace()
-  }
 }
 
 // MARK: - Public API
@@ -148,10 +155,9 @@ public struct MemoryParser: ~Copyable {
 /// - Returns: A parsed `XMLDocument`.
 /// - Throws: `XMLError` if parsing fails according to the provided options.
 public func parseXML(string: String, options: MemoryParserOptions = .strict) throws(XMLError)
-  -> XMLDocument
-{
-  let parser = MemoryParser(options: options)
-  return try parser.parse(string: string)
+    -> XMLDocument {
+    let parser = MemoryParser(options: options)
+    return try parser.parse(string: string)
 }
 
 /// Parses an HTML string into a document using the specified options.
@@ -165,8 +171,7 @@ public func parseXML(string: String, options: MemoryParserOptions = .strict) thr
 /// - Returns: A parsed `XMLDocument`.
 /// - Throws: `XMLError` if parsing fails according to the provided options.
 public func parseHTML(string: String, options: MemoryParserOptions = .lenientHTML) throws(XMLError)
-  -> XMLDocument
-{
-  let parser = MemoryParser(options: options)
-  return try parser.parse(string: string)
+    -> XMLDocument {
+    let parser = MemoryParser(options: options)
+    return try parser.parse(string: string)
 }

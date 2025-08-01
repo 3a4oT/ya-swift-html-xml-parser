@@ -25,96 +25,96 @@ import CLibXML2
 ///   safely within the actor's context, returning only a `Sendable` result.
 ///
 public actor ParsingService {
-  private let memoryParser = MemoryParser()
-  private let htmlParser = MemoryParser(options: .lenientHTML)
+    private let memoryParser = MemoryParser()
+    private let htmlParser = MemoryParser(options: .lenientHTML)
 
-  public init() {}
+    public init() {}
 
-  /// Parse XML from a string in a thread-safe manner
-  public func parseXML(string: String) throws(XMLError) -> XMLDocument {
-    try memoryParser.parse(string: string)
-  }
-
-  /// Parse HTML from a string in a thread-safe manner
-  public func parseHTML(string: String) throws(XMLError) -> XMLDocument {
-    try htmlParser.parse(string: string)
-  }
-
-  /// Parse XML from bytes in a thread-safe manner
-  public func parseXML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
-    #if swift(>=6.2)
-      try memoryParser.parse(bytes: Span(_unsafeElements: bytes))
-    #else
-      try memoryParser.parse(bytes: bytes)
-    #endif
-  }
-
-  /// Parse HTML from bytes in a thread-safe manner
-  public func parseHTML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
-    #if swift(>=6.2)
-      try htmlParser.parse(bytes: Span(_unsafeElements: bytes))
-    #else
-      try htmlParser.parse(bytes: bytes)
-    #endif
-  }
-
-  /// Parse XML from a file in a thread-safe manner
-  public func parseXMLFile(at path: String) throws(XMLError) -> XMLDocument {
-    try memoryParser.parseFile(at: path)
-  }
-
-  /// Parse HTML from a file in a thread-safe manner
-  public func parseHTMLFile(at path: String) throws(XMLError) -> XMLDocument {
-    try htmlParser.parseFile(at: path)
-  }
-
-  /// Parses an XML string and extracts a `Sendable` value in a thread-safe manner.
-  ///
-  /// This is the recommended method for concurrent parsing, as it encapsulates document access
-  /// within the actor's serialization context, preventing data races.
-  ///
-  /// - Parameters:
-  ///   - string: The XML string to parse.
-  ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
-  /// - Returns: The value returned by the `extract` closure.
-  /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
-  ///   wrapping the latter in `XMLError.userTransformError`.
-  public func parseXMLAndExtract<T: Sendable>(
-    string: String,
-    extract: (XMLDocument) throws -> T
-  ) async throws(XMLError) -> T {
-    do {
-      let doc = try parseXML(string: string)
-      return try extract(doc)
-    } catch {
-      throw XMLError.userTransformError(
-        message: "The user-provided transform closure failed: \(error)")
+    /// Parse XML from a string in a thread-safe manner
+    public func parseXML(string: String) throws(XMLError) -> XMLDocument {
+        try self.memoryParser.parse(string: string)
     }
-  }
 
-  /// Parses an HTML string and extracts a `Sendable` value in a thread-safe manner.
-  ///
-  /// This is the recommended method for concurrent parsing, as it encapsulates document access
-  /// within the actor's serialization context, preventing data races.
-  ///
-  /// - Parameters:
-  ///   - string: The HTML string to parse.
-  ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
-  /// - Returns: The value returned by the `extract` closure.
-  /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
-  ///   wrapping the latter in `XMLError.userTransformError`.
-  public func parseHTMLAndExtract<T: Sendable>(
-    string: String,
-    extract: (XMLDocument) throws -> T
-  ) async throws(XMLError) -> T {
-    do {
-      let doc = try parseHTML(string: string)
-      return try extract(doc)
-    } catch let error as XMLError {
-      throw error
-    } catch {
-      throw XMLError.userTransformError(
-        message: "The user-provided transform closure failed: \(error)")
+    /// Parse HTML from a string in a thread-safe manner
+    public func parseHTML(string: String) throws(XMLError) -> XMLDocument {
+        try self.htmlParser.parse(string: string)
     }
-  }
+
+    /// Parse XML from bytes in a thread-safe manner
+    public func parseXML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
+        #if swift(>=6.2)
+            try self.memoryParser.parse(bytes: Span(_unsafeElements: bytes))
+        #else
+            try self.memoryParser.parse(bytes: bytes)
+        #endif
+    }
+
+    /// Parse HTML from bytes in a thread-safe manner
+    public func parseHTML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
+        #if swift(>=6.2)
+            try self.htmlParser.parse(bytes: Span(_unsafeElements: bytes))
+        #else
+            try self.htmlParser.parse(bytes: bytes)
+        #endif
+    }
+
+    /// Parse XML from a file in a thread-safe manner
+    public func parseXMLFile(at path: String) throws(XMLError) -> XMLDocument {
+        try self.memoryParser.parseFile(at: path)
+    }
+
+    /// Parse HTML from a file in a thread-safe manner
+    public func parseHTMLFile(at path: String) throws(XMLError) -> XMLDocument {
+        try self.htmlParser.parseFile(at: path)
+    }
+
+    /// Parses an XML string and extracts a `Sendable` value in a thread-safe manner.
+    ///
+    /// This is the recommended method for concurrent parsing, as it encapsulates document access
+    /// within the actor's serialization context, preventing data races.
+    ///
+    /// - Parameters:
+    ///   - string: The XML string to parse.
+    ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
+    /// - Returns: The value returned by the `extract` closure.
+    /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
+    ///   wrapping the latter in `XMLError.userTransformError`.
+    public func parseXMLAndExtract<T: Sendable>(
+        string: String,
+        extract: (XMLDocument) throws -> T
+    ) async throws(XMLError) -> T {
+        do {
+            let doc = try parseXML(string: string)
+            return try extract(doc)
+        } catch {
+            throw XMLError.userTransformError(
+                message: "The user-provided transform closure failed: \(error)")
+        }
+    }
+
+    /// Parses an HTML string and extracts a `Sendable` value in a thread-safe manner.
+    ///
+    /// This is the recommended method for concurrent parsing, as it encapsulates document access
+    /// within the actor's serialization context, preventing data races.
+    ///
+    /// - Parameters:
+    ///   - string: The HTML string to parse.
+    ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
+    /// - Returns: The value returned by the `extract` closure.
+    /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
+    ///   wrapping the latter in `XMLError.userTransformError`.
+    public func parseHTMLAndExtract<T: Sendable>(
+        string: String,
+        extract: (XMLDocument) throws -> T
+    ) async throws(XMLError) -> T {
+        do {
+            let doc = try parseHTML(string: string)
+            return try extract(doc)
+        } catch let error as XMLError {
+            throw error
+        } catch {
+            throw XMLError.userTransformError(
+                message: "The user-provided transform closure failed: \(error)")
+        }
+    }
 }
