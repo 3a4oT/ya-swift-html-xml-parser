@@ -50,7 +50,7 @@ A common task in web scraping is to find all URLs for media, links, or embedded 
 This is especially useful for building scrapers for media sites (e.g., finding movie trailers or image galleries).
 
 ```swift
-import ya_swift_xml
+import ya_swift_html_xml_parser
 
 let mediaHTML = """
 <article>
@@ -68,12 +68,12 @@ do {
     let mediaDoc = try parseHTML(string: mediaHTML)
 
     // Example 1: Find only video sources and embedded players.
-    let videoURLs = mediaDoc.urls(from: [.source, .iframe])
+    let videoURLs = try mediaDoc.urls(from: [.source, .iframe])
     print("Video Content URLs: \(videoURLs)")
     // Prints: Video Content URLs: ["/movie-trailer.mp4", "https://player.example.com/movie/123"]
 
     // Example 2: Get every supported URL from the document using .all.
-    let allContentURLs = mediaDoc.urls(from: .all)
+    let allContentURLs = try mediaDoc.urls(from: .all)
     print("All URLs: \(allContentURLs)")
     // Prints: All URLs: ["/reviews/home", "/poster.jpg", "/video-poster.png", "/movie-trailer.mp4", "https://player.example.com/movie/123"]
 } catch {
@@ -86,7 +86,7 @@ do {
 You can also perform basic queries and access element attributes and text content directly.
 
 ```swift
-import ya_swift_xml
+import ya_swift_html_xml_parser
 
 let html = """
 <html>
@@ -122,7 +122,7 @@ do {
 Use `parseXML(string:)` for well-formed XML documents. By default, this function is **strict** and will throw an error if the XML is not perfectly well-formed. This is ideal for validation and ensuring data integrity. For more advanced control, see the "Parsing Strategies" section below.
 
 ```swift
-import ya_swift_xml
+import ya_swift_html_xml_parser
 
 let xml = """
 <rss version="2.0">
@@ -210,7 +210,7 @@ The `ParsingService` actor provides a safe way to perform parsing operations fro
 A common use case is to offload parsing work from the main thread in a UI application to keep it responsive. The example below shows how to parse a batch of documents concurrently in a background task.
 
 ```swift
-import ya_swift_xml
+import ya_swift_html_xml_parser
 
 let service = ParsingService()
 let docsToParse = [
@@ -255,7 +255,7 @@ When using the `ParsingService`, keep the following in mind:
 `StreamParser` processes large documents piece-by-piece to minimize memory usage. You provide a custom handler to react to parsing events as they occur.
 
 ```swift
-import ya_swift_xml
+import ya_swift_html_xml_parser
 
 class MyEventHandler: StreamEventHandler {
     var elementCount = 0
@@ -267,9 +267,9 @@ class MyEventHandler: StreamEventHandler {
 }
 
 let handler = MyEventHandler()
-let parser = try StreamParser(handler: handler)
 
 do {
+    let parser = try StreamParser(handler: handler)
     try parser.parseFile(at: "/path/to/large.xml")
     print("Parsed \(handler.elementCount) elements from the stream.")
 } catch {
