@@ -25,12 +25,19 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "ya-swift-html-xml-parser",
-            dependencies: ["CLibXML2"],
+            dependencies: ["CLibXML2", "LibXMLTrampolines"],
             swiftSettings: [
                 .swiftLanguageMode(.v6),
                 .enableExperimentalFeature("NonescapableTypes"),
                 .enableUpcomingFeature("InternalImportsByDefault")
             ]
+        ),
+        .target(
+            name: "LibXMLTrampolines",
+            dependencies: ["CLibXML2"],
+            path: "Sources/LibXMLTrampolines",
+            publicHeadersPath: "include"
+
         ),
         .systemLibrary(
             name: "CLibXML2",
