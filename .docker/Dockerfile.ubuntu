@@ -9,9 +9,13 @@
 # Run tests inside the container with:
 # docker run --rm -v "$(pwd):/src" -w /src ya-swift-xml-ubuntu swift test
 
-# Use the official Swift image for Swift 6.1.2 on Ubuntu 24.04
-FROM swift:6.1.2-noble
+# Use the official Swift image for Swift 6.2.0 on Ubuntu 24.04
+FROM swift:6.2.0-noble
 
 # Install libxml2, which is a system dependency for this project.
-# The -y flag assumes "yes" to all prompts.
-RUN apt-get update && apt-get install -y libxml2-dev
+# Update packages, install dependencies, and clean up to reduce vulnerabilities
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends libxml2-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
