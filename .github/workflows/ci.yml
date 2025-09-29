@@ -9,7 +9,7 @@ on:
 jobs:
   linting:
     name: "Linting (swift-format)"
-    runs-on: macos-15
+    runs-on: macos-26
     
     steps:
       - name: Checkout repository
@@ -23,7 +23,7 @@ jobs:
 
   test-darwin:
     name: "Test (on ${{ matrix.platform.name }})"
-    runs-on: macos-15
+    runs-on: macos-26
 
     strategy:
       fail-fast: false
@@ -39,8 +39,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Select Xcode 26.0
+        run: sudo xcode-select -s /Applications/Xcode_26.0.app
 
       - name: Build and run tests
         run: |
@@ -61,39 +61,10 @@ jobs:
             xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=${PLATFORM_NAME} Simulator,id=${UDID}"
           fi
 
-  test-darwin-beta:
-    name: "Test (Xcode 26 Beta on macOS)"
-    runs-on: macos-15
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Select Xcode 26.0
-        run: sudo xcode-select -s /Applications/Xcode_26.0.app
-
-      - name: Build and run tests
-        run: xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=macOS,arch=arm64"
-
   test-linux-stable:
-    name: "Test (Swift 6.1 on Ubuntu 24.04 LTS)"
+    name: "Test (Swift 6.2 on Ubuntu 24.04 LTS)"
     runs-on: ubuntu-latest
-    container: 'swift:6.1.2-noble'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Install libxml2
-        run: apt-get update && apt-get install -y libxml2-dev
-
-      - name: Build and run tests
-        run: swift test
-
-  test-linux-nightly:
-    name: "Test (Swift 6.2 Nightly on Ubuntu 24.04 LTS)"
-    runs-on: ubuntu-latest
-    container: 'swiftlang/swift:nightly-6.2-noble'
+    container: 'swift:6.2.0-noble'
 
     steps:
       - name: Checkout repository
