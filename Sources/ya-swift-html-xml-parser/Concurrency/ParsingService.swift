@@ -42,20 +42,12 @@ public actor ParsingService {
 
     /// Parse XML from bytes in a thread-safe manner
     public func parseXML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
-        #if swift(>=6.2)
-            try self.memoryParser.parse(bytes: Span(_unsafeElements: bytes))
-        #else
-            try self.memoryParser.parse(bytes: bytes)
-        #endif
+        try self.memoryParser.parse(bytes: Span(_unsafeElements: bytes))
     }
 
     /// Parse HTML from bytes in a thread-safe manner
     public func parseHTML(bytes: UnsafeBufferPointer<UInt8>) throws(XMLError) -> XMLDocument {
-        #if swift(>=6.2)
-            try self.htmlParser.parse(bytes: Span(_unsafeElements: bytes))
-        #else
-            try self.htmlParser.parse(bytes: bytes)
-        #endif
+        try self.htmlParser.parse(bytes: Span(_unsafeElements: bytes))
     }
 
     /// Parse XML from a file in a thread-safe manner
