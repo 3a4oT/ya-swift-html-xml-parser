@@ -46,7 +46,7 @@ jobs:
         run: |
           PLATFORM_NAME="${{ matrix.platform.name }}"
           if [[ "$PLATFORM_NAME" == "macOS" ]]; then
-            xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=macOS,arch=arm64"
+            xcodebuild test -scheme YaXHParser -destination "platform=macOS,arch=arm64"
           else
             GREP_PATTERN="${{ matrix.platform.grep }}"
             UDID=$(xcrun simctl list devices available | grep -m 1 "$GREP_PATTERN" | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr($0, RSTART + 1, RLENGTH - 2) }')
@@ -58,7 +58,7 @@ jobs:
 
             echo "Found available ${PLATFORM_NAME} simulator with UDID: ${UDID}"
             
-            xcodebuild test -scheme ya-swift-html-xml-parser -destination "platform=${PLATFORM_NAME} Simulator,id=${UDID}"
+            xcodebuild test -scheme YaXHParser -destination "platform=${PLATFORM_NAME} Simulator,id=${UDID}"
           fi
 
   test-linux-stable:
