@@ -1,6 +1,6 @@
 import Testing
 
-@testable import ya_swift_html_xml_parser
+@testable import YaXHParser
 
 @Suite("Real-World HTML Parsing")
 struct HTMLParsingTests {

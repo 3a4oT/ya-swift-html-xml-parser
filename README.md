@@ -1,4 +1,4 @@
-# ya-swift-html-xml-parser
+# YaXHParser
 
 A tiny, modern Swift wrapper for `libxml2` that makes XML & HTML parsing easy, taking a-dvantage of the latest Swift features.
 
@@ -29,7 +29,7 @@ A tiny, modern Swift wrapper for `libxml2` that makes XML & HTML parsing easy, t
 
 ## Installation
 
-Add ya-swift-html-xml-parser as a dependency to your `Package.swift` file:
+Add YaXHParser as a dependency to your `Package.swift` file:
 
 ```swift
 dependencies: [
@@ -50,7 +50,7 @@ A common task in web scraping is to find all URLs for media, links, or embedded 
 This is especially useful for building scrapers for media sites (e.g., finding movie trailers or image galleries).
 
 ```swift
-import ya_swift_html_xml_parser
+import YaXHParser
 
 let mediaHTML = """
 <article>
@@ -86,7 +86,7 @@ do {
 You can also perform basic queries and access element attributes and text content directly.
 
 ```swift
-import ya_swift_html_xml_parser
+import YaXHParser
 
 let html = """
 <html>
@@ -122,7 +122,7 @@ do {
 Use `parseXML(string:)` for well-formed XML documents. By default, this function is **strict** and will throw an error if the XML is not perfectly well-formed. This is ideal for validation and ensuring data integrity. For more advanced control, see the "Parsing Strategies" section below.
 
 ```swift
-import ya_swift_html_xml_parser
+import YaXHParser
 
 let xml = """
 <rss version="2.0">
@@ -210,7 +210,7 @@ The `ParsingService` actor provides a safe way to perform parsing operations fro
 A common use case is to offload parsing work from the main thread in a UI application to keep it responsive. The example below shows how to parse a batch of documents concurrently in a background task.
 
 ```swift
-import ya_swift_html_xml_parser
+import YaXHParser
 
 let service = ParsingService()
 let docsToParse = [
@@ -255,7 +255,7 @@ When using the `ParsingService`, keep the following in mind:
 `StreamParser` processes large documents piece-by-piece to minimize memory usage. You provide a custom handler to react to parsing events as they occur.
 
 ```swift
-import ya_swift_html_xml_parser
+import YaXHParser
 
 class MyEventHandler: StreamEventHandler {
     var elementCount = 0
@@ -279,9 +279,9 @@ do {
 
 ## Comparison to SwiftSoup
 
-**[SwiftSoup](https://github.com/scinfu/SwiftSoup)** is a popular, pure-Swift HTML parser. `ya-swift-html-xml-parser` has a different design philosophy and may be suitable for different tasks.
+**[SwiftSoup](https://github.com/scinfu/SwiftSoup)** is a popular, pure-Swift HTML parser. `YaXHParser` has a different design philosophy and may be suitable for different tasks.
 
-| Feature               | ya-swift-html-xml-parser                                         | SwiftSoup                                             |
+| Feature               | YaXHParser                                         | SwiftSoup                                             |
 |-----------------------|------------------------------------------------------|-------------------------------------------------------|
 | **Core Engine**       | A thin Swift wrapper around the system's `libxml2` C library. | A feature-rich, pure Swift implementation.            |
 | **Dependencies**      | None (Foundation-free).                              | None (Pure Swift).                                    |
@@ -290,7 +290,7 @@ do {
 | **Concurrency**       | Provides an actor for uncommon thread-safe parsing needs. | Thread-safety is managed by the user.                 |
 | **Ideal Use Case**    | Fast data extraction and scraping where a minimal API is sufficient. | Projects that need to modify the DOM, or where a pure-Swift dependency is required. |
 
-In short, choose **ya-swift-html-xml-parser** for a lightweight tool focused on fast data extraction. Choose **[SwiftSoup](https://github.com/scinfu/SwiftSoup)** when you need a comprehensive, pure-Swift toolkit for more complex DOM manipulation.
+In short, choose **YaXHParser** for a lightweight tool focused on fast data extraction. Choose **[SwiftSoup](https://github.com/scinfu/SwiftSoup)** when you need a comprehensive, pure-Swift toolkit for more complex DOM manipulation.
 
 ## Local Development
 
