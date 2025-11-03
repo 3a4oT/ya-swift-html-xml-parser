@@ -61,9 +61,9 @@ public struct MemoryParser: ~Copyable {
     }
 
     /// Parse XML/HTML from a String.
+    /// - Parameter string: The string to parse. This parameter is consumed for optimal performance.
     /// - Note: This method is NOT thread-safe. libxml2 uses global state during parsing.
-    public func parse(string: String) throws(XMLError) -> XMLDocument {
-        var string = string
+    public func parse(string: consuming String) throws(XMLError) -> XMLDocument {
         do {
             return try string.withUTF8 { buffer in
                 return try self.parse(bytes: Span(_unsafeElements: buffer))
