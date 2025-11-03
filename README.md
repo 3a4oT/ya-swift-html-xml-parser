@@ -107,8 +107,8 @@ do {
         // The .text property recursively gets all text content from a node.
         print("Link text: \(link.text)") // Prints: Link text: Page 1
 
-        // Access attributes using subscripting.
-        if let href = link.attributes["href"] {
+        // Access attributes using getAttribute().
+        if let href = link.getAttribute("href") {
             print("Link URL: \(href)") // Prints: Link URL: /page1
         }
     }
