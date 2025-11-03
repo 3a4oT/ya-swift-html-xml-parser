@@ -4,7 +4,7 @@ private struct SelectorTranslator: ~Copyable {
     private let source: String.UTF8View
     private var cursor: String.UTF8View.Index
 
-    init(_ css: String) {
+    init(_ css: consuming String) {
         self.source = css.utf8
         self.cursor = self.source.startIndex
     }
@@ -123,7 +123,7 @@ private struct SelectorTranslator: ~Copyable {
 /// A simple, CSS selector to XPath translator.
 /// This is not a full CSS3 implementation, but it covers the most common cases.
 /// It is optimized to minimize string allocations by operating on the UTF8 view of the selector.
-func translateCSSToXPath(_ css: String, relative: Bool = false) throws(CSSError) -> String {
+func translateCSSToXPath(_ css: consuming String, relative: Bool = false) throws(CSSError) -> String {
     var parser = SelectorTranslator(css)
     return try parser.parse(relative: relative)
 }
