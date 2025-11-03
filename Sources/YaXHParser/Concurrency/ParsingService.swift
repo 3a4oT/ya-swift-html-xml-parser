@@ -31,12 +31,14 @@ public actor ParsingService {
     public init() {}
 
     /// Parse XML from a string in a thread-safe manner
-    public func parseXML(string: String) throws(XMLError) -> XMLDocument {
+    /// - Parameter string: The string to parse. This parameter is consumed for optimal performance.
+    public func parseXML(string: consuming String) throws(XMLError) -> XMLDocument {
         try self.memoryParser.parse(string: string)
     }
 
     /// Parse HTML from a string in a thread-safe manner
-    public func parseHTML(string: String) throws(XMLError) -> XMLDocument {
+    /// - Parameter string: The string to parse. This parameter is consumed for optimal performance.
+    public func parseHTML(string: consuming String) throws(XMLError) -> XMLDocument {
         try self.htmlParser.parse(string: string)
     }
 
@@ -66,13 +68,13 @@ public actor ParsingService {
     /// within the actor's serialization context, preventing data races.
     ///
     /// - Parameters:
-    ///   - string: The XML string to parse.
+    ///   - string: The XML string to parse. This parameter is consumed for optimal performance.
     ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
     /// - Returns: The value returned by the `extract` closure.
     /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
     ///   wrapping the latter in `XMLError.userTransformError`.
     public func parseXMLAndExtract<T: Sendable>(
-        string: String,
+        string: consuming String,
         extract: (XMLDocument) throws -> T
     ) async throws(XMLError) -> T {
         do {
@@ -90,13 +92,13 @@ public actor ParsingService {
     /// within the actor's serialization context, preventing data races.
     ///
     /// - Parameters:
-    ///   - string: The HTML string to parse.
+    ///   - string: The HTML string to parse. This parameter is consumed for optimal performance.
     ///   - extract: A closure that takes the parsed `XMLDocument` and returns a `Sendable` value.
     /// - Returns: The value returned by the `extract` closure.
     /// - Throws: Rethrows any `XMLError` from parsing or any error thrown by the `extract` closure,
     ///   wrapping the latter in `XMLError.userTransformError`.
     public func parseHTMLAndExtract<T: Sendable>(
-        string: String,
+        string: consuming String,
         extract: (XMLDocument) throws -> T
     ) async throws(XMLError) -> T {
         do {
