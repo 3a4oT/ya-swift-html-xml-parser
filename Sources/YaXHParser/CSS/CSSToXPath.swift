@@ -41,14 +41,15 @@ private struct SelectorTranslator: ~Copyable {
     }
 
     private mutating func parseComponent() throws(CSSError) -> String {
-        var path = ""
+        var parts: [String] = []
+        parts.reserveCapacity(4) // Typical: tag + id + 2 classes
 
         // Tag
         let startOfComponent = self.cursor
         if let char = peek(), (char >= 97 && char <= 122) || (char >= 65 && char <= 90) {
-            path += self.parseIdentifier()
+            parts.append(String(self.parseIdentifier()))
         } else {
-            path += "*"
+            parts.append("*")
         }
 
         // ID, Classes, and other attributes
@@ -57,11 +58,11 @@ private struct SelectorTranslator: ~Copyable {
             case Self.hash: // #
                 self.advance()
                 let id = self.parseIdentifier()
-                path += "[@id='\(id)']"
+                parts.append("[@id='\(id)']")
             case Self.dot: // .
                 self.advance()
                 let `class` = self.parseIdentifier()
-                path += "[contains(concat(' ', normalize-space(@class), ' '), ' \(`class`) ')]"
+                parts.append("[contains(concat(' ', normalize-space(@class), ' '), ' \(`class`) ')]")
             case Self.attributeStart: // [
                 // For now, attribute selectors are not supported. Throw an error.
                 throw CSSError.unsupportedSelector(
@@ -70,19 +71,21 @@ private struct SelectorTranslator: ~Copyable {
                 )
             default:
                 if self.cursor == startOfComponent { self.advance() }
-                return path
+                return parts.joined()
             }
         }
-        return path
+        return parts.joined()
     }
 
     mutating func parse(relative: Bool) throws(CSSError) -> String {
         var xpathParts: [String] = []
+        xpathParts.reserveCapacity(2) // Most selectors have 1-2 groups
 
         while !self.isAtEnd {
             self.skipWhitespace()
 
             var components: [String] = []
+            components.reserveCapacity(3) // Typical: 1-3 descendant components
             // Using a for loop here instead of a while to avoid re-calculating `isAtEnd`
             // and to make the logic clearer.
             for _ in 0 ..< Int.max {
