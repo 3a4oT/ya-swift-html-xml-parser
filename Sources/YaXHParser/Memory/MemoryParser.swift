@@ -118,11 +118,11 @@ public struct MemoryParser: ~Copyable {
 /// you can provide different options.
 ///
 /// - Parameters:
-///   - string: The XML string to parse.
+///   - string: The XML string to parse. This parameter is consumed for optimal performance.
 ///   - options: The parsing options to use. Defaults to `.strict`.
 /// - Returns: A parsed `XMLDocument`.
 /// - Throws: `XMLError` if parsing fails according to the provided options.
-public func parseXML(string: String, options: MemoryParserOptions = .strict) throws(XMLError)
+public func parseXML(string: consuming String, options: MemoryParserOptions = .strict) throws(XMLError)
     -> XMLDocument {
     let parser = MemoryParser(options: options)
     return try parser.parse(string: string)
@@ -134,11 +134,11 @@ public func parseXML(string: String, options: MemoryParserOptions = .strict) thr
 /// designed to handle common well-formedness issues, similar to a web browser.
 ///
 /// - Parameters:
-///   - string: The HTML string to parse.
+///   - string: The HTML string to parse. This parameter is consumed for optimal performance.
 ///   - options: The parsing options to use. Defaults to `.lenientHTML`.
 /// - Returns: A parsed `XMLDocument`.
 /// - Throws: `XMLError` if parsing fails according to the provided options.
-public func parseHTML(string: String, options: MemoryParserOptions = .lenientHTML) throws(XMLError)
+public func parseHTML(string: consuming String, options: MemoryParserOptions = .lenientHTML) throws(XMLError)
     -> XMLDocument {
     let parser = MemoryParser(options: options)
     return try parser.parse(string: string)
