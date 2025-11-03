@@ -33,7 +33,7 @@ Add YaXHParser as a dependency to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/3a4oT/ya-swift-html-xml-parser.git", from: "0.1.0")
+    .package(url: "https://github.com/3a4oT/ya-swift-html-xml-parser.git", from: "0.2.0")
 ]
 ```
 
